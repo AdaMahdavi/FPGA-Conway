@@ -1,13 +1,19 @@
 # FPGA Implementation of Conway's Game of Life
 
-Conway's Game of Life on an FPGA is kind of a cliché project. I first came across it while going through [HDLBits' problem on it](https://hdlbits.01xz.net/wiki/Conwaylife); being the second to last problem I solved before completing my HDLBits run, and like many taking amusement in the vastness of possibilities you can achieve with a single line of logic: `next = (sum == 3) || (center && sum == 2)`, I wanted to try bringing it to life.
+Conway's Game of Life on an FPGA is kind of a cliché project. I first came across it while going through [HDLBits' problem on it](https://hdlbits.01xz.net/wiki/Conwaylife); being the second to last problem I solved before completing my HDLBits run, and like many taking amusement in the vastness of possibilities you can achieve with a single line of logic: `next = (sum == 3) || (center && sum == 2)`, I wanted to try bringing it to life. This repo is fully self-contained: clone it, source the TCL script in Vivado, and the full project rebuilds from scratch. An RLE-to-COE conversion script is also included if you want to load your own patterns.
 
 ## Some Interesting Demos
 
-![pufferfish_breeder](media/demo_gifs/pufferfish_breeder.gif)
-![random_seed](media/demo_gifs/random_seed.gif)
-![reactors](media/demo_gifs/reactors.gif)
+<img src="pufferfish_breeder.gif" width="750"/>
+*MAP: pufferfish_breeder*
+<img src="random_seed.gif" width="750"/>
+*MAP: random seed*
+<img src="reactors.gif" width="750"/>
+*MAP: reactors*
+
 ---
+
+
 
 Something that stood out to me was that most implementations I came across didn't allocate the full VGA frame; they either used a scaled-up canvas, rendering larger blocks instead of pixel-wide cells. The simple nature of the game logic is probably a definitive factor in why not many go as far as a detailed full-resolution implementation. But I thought starting with the game logic alone and figuring out the architecture around it would be far more interesting than picking an existing hierarchy with predefined dataflow and memory management.
 
@@ -16,6 +22,7 @@ I started knowing nothing but what the game logic was meant to achieve. Everythi
 **Board:** Digilent Basys3 (Xilinx Artix-7 XC7A35T)  
 **VGA Display:** 640×480 @ 59.5Hz
 
+
 ---
 
 ## Conway's Game of Life and other Cellular Automata:  How does it all work?
@@ -23,8 +30,10 @@ I started knowing nothing but what the game logic was meant to achieve. Everythi
 Cellular automata follow a simple premise: the next state of each cell depends solely on the state of its neighbors in the previous generation. Game of Life in particular follows this rule:
 
 ![Conway rule diagram](media/images/conway_rule.png)
+*Conway rules*
 
 ![example animation](media/images/gol_example_animation.gif)
+*example animation*
 
 [Wikipedia]( https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life) and various other sources go deep on the interesting patterns and behavior.
 
@@ -34,7 +43,10 @@ From a hardware standpoint, it's clear what the system needs to do: for every ce
 
 ## Architecture
 
+
 ![System-level block design](media/images/architecture_bd.png)
+*System-level block design*
+
 
 ### System Overview
 
@@ -56,8 +68,10 @@ The VGA controller is the primary driver of the whole system: both game_start an
 The one thing this introduces is a dual-clock situation on VRAM; mid-game transfer writes to it at 150MHz while the VGA-adjacent path reads from it at 25MHz. The BRAM's dual-port architecture handles the clock domain crossing internally, and the row 432 timing guarantee ensures the write pointer never catches the read pointer, while never falling behind on updating the VRAM before VGA pointer returns to top left. I have put a more precise explanation of this [here](TIMING.md). 
 
 
-###An attempt at Otimizing Bandwidth: Reusing Neighbors
+## Optimizing Bandwidth: Reusable neighbors
 ![Neighbor reuse via sliding window for first three cell calculations](media/images/sliding_read_window.png)
+*Neighbor reuse via sliding window for first three cell calculations*
+
 
 A brute-force implementation would read all 8 neighbors per cell, which either increases bandwidth requirements or forces more complex multi-cell computation. Besides, if 9 reads are required per cell (accounting for 1-cycle BRAM read latency) plus 1 cycle for writing next state, we're burning 10 cycles for a clock that needs to stay on par with the VGA clock (25MHz); meaning BRAM reads and writes would need to run at at least 250MHz.
 
@@ -72,10 +86,6 @@ The key insight: we only truly need to read all 9 cells for cells on the left ed
 - Only 3 new neighbor values are fetched
 
 This reduces memory reads from 9 to 3 per cell; what makes a fully pipelined, sustained update rate possible on limited BRAM. The reduction from 9 to 3 gave a lot of freedom in defining the update window: left-edge cells take 10 cycles, all others take 6. Since we need to keep up with the 25MHz VGA clock; 25 × 6 = 150MHz became the finalized system clock.
-
-### More Considerations on Timing: Transfer Overlap and Collision Avoidance
-
-Took a little math to confirm we can get all state calculations done within a VGA frame. As a result, mid-game transfer starts copying `next_state_bram` onto `vga_bram` once VGA starts scanning row 432. There were some interesting calculations involved in deriving the valid interval and proving no read/write collision can occur; I've put the full breakdown in [TIMING.md](TIMING.md).
 
 ### VGA Controller
 
@@ -132,7 +142,7 @@ FPGA-Conway/
 - Vivado 2024.2 (or compatible; update the version in the tcl script if different)
 - Basys3 board (part: XC7A35T)
 
-### Rebuild Project
+### Project Setup in Vivado
 
 ```bash
 vivado -mode batch -source scripts/build.tcl
@@ -145,6 +155,7 @@ This recreates the full Vivado project from scratch. Open the generated project,
 The active pattern is set by the `.coe` file referenced in `blk_mem_gen_0`. To swap patterns, re-customize the IP in Vivado, point it to a different `.coe` file in `patterns/`, and re-run synthesis.
 
 ![Configuring memory IP to load coefficient files](media/images/bram_load_coe.png)
+*Configuring memory IP to load coefficient files*
 
 ### Adding Your Own Pattern
 
@@ -169,11 +180,10 @@ Worth reading: a note on memory mapping [here](MEMORY.md).
 **Reset strategy:** there's an async reset button, but it doesn't reset memory; it just resets the VGA controller and game logic. The bigger issue is the inability to reload an initial state without modifying the coefficient files loaded onto BRAM and regenerating the bitstream. Memory was already a significant bottleneck; we're occupying 48 of the 50 available BRAM tiles on the Basys3.
 
 ![Resource utilization](media/images/utility.png)
+*Resource utilization*
 
 The only real counterpart would've been using LUT-based SRAM to store one or two additional configurations using leftover resources, but it didn't appeal much. A more rational extension would simply be moving to a board better suited for fitting multiple configurations, with more memory available.
 
 ---
 
-## License
-
-MIT
+references and resources: 
