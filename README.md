@@ -4,11 +4,11 @@ Conway's Game of Life on an FPGA is kind of a cliché project. I first came acro
 
 ## Some Interesting Demos
 
-<img src="pufferfish_breeder.gif" width="750"/>
+<img src="media/demo_gifs/pufferfish_breeder.gif" width="750"/>
 *MAP: pufferfish_breeder*
-<img src="random_seed.gif" width="750"/>
+<img src="media/demo_gifs/random_seed.gif" width="750"/>
 *MAP: random seed*
-<img src="reactors.gif" width="750"/>
+<img src="media/demo_gifs/reactors.gif" width="750"/>
 *MAP: reactors*
 
 ---
@@ -187,3 +187,5 @@ The only real counterpart would've been using LUT-based SRAM to store one or two
 ---
 
 references and resources: 
+- https://www.datawrapper.de/blog/game-of-life
+- 
