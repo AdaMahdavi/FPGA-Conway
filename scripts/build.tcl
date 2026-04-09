@@ -119,7 +119,7 @@ set files [list \
   [file normalize "$origin_dir/patterns/high_period_1024x512.coe"]              \
   [file normalize "$origin_dir/patterns/interview_demo.coe"]                    \
   [file normalize "$origin_dir/patterns/noisy_map_1024x512.coe"]                \
-  [file normalize "$origin_dir/patterns/oscillators_7&8_1024x512.coe"]          \
+  [file normalize "$origin_dir/patterns/oscillators_7n8_1024x512.coe"]          \
   [file normalize "$origin_dir/patterns/pentadecathlon_grid.coe"]               \
   [file normalize "$origin_dir/patterns/pufferfish_breeder.coe"]                \
   [file normalize "$origin_dir/patterns/puffer_engine_1024x512.coe"]            \
@@ -147,14 +147,7 @@ import_ip -norecurse -fileset $obj \
 import_ip -norecurse -fileset $obj \
   [file normalize "$origin_dir/srcs/IP/blk_mem_gen_0/blk_mem_gen_0.xci"]
 
-foreach ip_file {"clk_wiz_0/clk_wiz_0.xci" "blk_mem_gen_0/blk_mem_gen_0.xci"} {
-  set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$ip_file"]]
-  set_property -name "generate_files_for_reference" -value "0" -objects $file_obj
-  set_property -name "registered_with_manager"      -value "1" -objects $file_obj
-  if { ![get_property "is_locked" $file_obj] } {
-    set_property -name "synth_checkpoint_mode" -value "Singular" -objects $file_obj
-  }
-}
+
 
 # --- Set top module ---
 set obj [get_filesets sources_1]
