@@ -2,18 +2,48 @@
 
 Conway's Game of Life on an FPGA is kind of a cliché project. I first came across it while going through [HDLBits' problem on it](https://hdlbits.01xz.net/wiki/Conwaylife); being the second to last problem I solved before completing my HDLBits run, and like many taking amusement in the vastness of possibilities you can achieve with a single line of logic: `next = (sum == 3) || (center && sum == 2)`, I wanted to try bringing it to life. This repo is fully self-contained: clone it, source the TCL script in Vivado, and the full project rebuilds from scratch. An RLE-to-COE conversion script is also included if you want to load your own patterns.
 
+
 ## Some Interesting Demos
 
 <img src="media/demo_gifs/pufferfish_breeder.gif" width="750"/>
-*MAP: pufferfish_breeder*
+MAP: pufferfish_breeder
 <img src="media/demo_gifs/random_seed.gif" width="750"/>
-*MAP: random seed*
+MAP: random seed
 <img src="media/demo_gifs/reactors.gif" width="750"/>
-*MAP: reactors*
+MAP: reactors
 
 ---
+##  Quick Start 
+- Vivado ver: 2024.2 (update the version in the tcl script if different)
+- Board: Digilent's Basys3 (part: XC7A35T)
+
+```bash
+git clone https://github.com/AdaMahdavi/FPGA-Conway
+```
+
+Then open Vivado's Tcl Shell and run the following:
+
+```Tcl
+cd FPGA-Conway
+
+# run Vivado in batch mode
+vivado -mode batch -source scripts/build.tcl
+
+### Expected Output (follow console messages to synthesize/implement)
+- Vivado project created: `conway_gol/`
+
+## Synthesize
+launch_runs synth_1 -jobs 4  
+wait_on_run synth_1
+
+## Implement
+launch_runs impl_1 -to_step write_bitstream -jobs 4
+wait_on_run impl_1
 
 
+### launch Vivado GUI from Tcl Shell:
+vivado conway_gol/conway_gol.xpr
+```
 
 Something that stood out to me was that most implementations I came across didn't allocate the full VGA frame; they either used a scaled-up canvas, rendering larger blocks instead of pixel-wide cells. The simple nature of the game logic is probably a definitive factor in why not many go as far as a detailed full-resolution implementation. But I thought starting with the game logic alone and figuring out the architecture around it would be far more interesting than picking an existing hierarchy with predefined dataflow and memory management.
 
@@ -136,19 +166,6 @@ FPGA-Conway/
 ---
 
 ## Building
-
-### Prerequisites
-
-- Vivado 2024.2 (or compatible; update the version in the tcl script if different)
-- Basys3 board (part: XC7A35T)
-
-### Project Setup in Vivado
-
-```bash
-vivado -mode batch -source scripts/build.tcl
-```
-
-This recreates the full Vivado project from scratch. Open the generated project, run synthesis and implementation, and program the board.
 
 ### Loading a Pattern
 
