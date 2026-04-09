@@ -86,9 +86,7 @@ set obj [get_filesets sources_1]
 
 # --- VGA Controller sources ---
 set files [list \
-  [file normalize "$origin_dir/srcs/VGA_controller/control_VGA.v"]       \
-  [file normalize "$origin_dir/srcs/VGA_controller/display_gen.v"]        \
-  [file normalize "$origin_dir/srcs/VGA_controller/display_test_top.v"]   \
+  [file normalize "$origin_dir/srcs/VGA_controller/control_VGA.v"]        \
   [file normalize "$origin_dir/srcs/VGA_controller/horizontal_counter.v"] \
   [file normalize "$origin_dir/srcs/VGA_controller/hsync_generator.v"]    \
   [file normalize "$origin_dir/srcs/VGA_controller/vertical_counter.v"]   \
@@ -141,18 +139,27 @@ foreach f $sv_files {
 
 
 # --- Add IP cores ---
-import_ip -norecurse -fileset $obj \
-  [file normalize "$origin_dir/srcs/IP/clk_wiz_0/clk_wiz_0.xci"]
+set clk_xci [file normalize "$origin_dir/srcs/IP/clk_wiz_0/clk_wiz_0.xci"]
+set bram_xci [file normalize "$origin_dir/srcs/IP/blk_mem_gen_0/blk_mem_gen_0.xci"]
 
-import_ip -norecurse -fileset $obj \
-  [file normalize "$origin_dir/srcs/IP/blk_mem_gen_0/blk_mem_gen_0.xci"]
+puts "INFO: Adding IP $clk_xci"
+puts "INFO: Adding IP $bram_xci"
+
+add_files -fileset sources_1 [list $clk_xci $bram_xci]
+
+puts "INFO: Files after add_files:"
+puts [get_files *.xci]
+
+upgrade_ip [get_ips *]
+generate_target all [get_ips *]
+export_ip_user_files -of_objects [get_ips *] -no_script -sync -force
 
 
 
 # --- Set top module ---
 set obj [get_filesets sources_1]
+set_property -name "top_auto_set" -value "0"                  -objects $obj
 set_property -name "top"          -value "conway_top_wrapper" -objects $obj
-set_property -name "top_auto_set" -value "1"                  -objects $obj
 
 # -------------------------------------------------------------------------
 # Create 'constrs_1' fileset
@@ -191,10 +198,10 @@ add_files -norecurse -fileset $obj $files
 set file_obj [get_files -of_objects [get_filesets sim_1] [list "*control_conway_tb.sv"]]
 set_property -name "file_type" -value "SystemVerilog" -objects $file_obj
 
-set obj [get_filesets sim_1]
-set_property -name "top"          -value "tb_conway_top"  -objects $obj
-set_property -name "top_auto_set" -value "0"              -objects $obj
-set_property -name "top_lib"      -value "xil_defaultlib" -objects $obj
+set obj [get_filesets sources_1]
+set_property -name "top_auto_set" -value "0"                  -objects $obj
+set_property -name "top"          -value "conway_top_wrapper" -objects $obj
+set_property -name "top_lib"      -value "xil_defaultlib"     -objects $obj
 
 # -------------------------------------------------------------------------
 # Synthesis run
