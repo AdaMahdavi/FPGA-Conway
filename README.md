@@ -27,10 +27,13 @@ Then open Vivado's Tcl Shell and run the following:
 cd FPGA-Conway
 
 # run Vivado in batch mode
-vivado -mode batch -source scripts/build.tcl
+exec vivado -mode batch -source scripts/build.tcl
 
 ### Expected Output (follow console messages to synthesize/implement)
 - Vivado project created: `conway_gol/`
+
+## Open project (if not already open)
+open_project conway_gol/conway_gol.xpr
 
 ## Synthesize
 launch_runs synth_1 -jobs 4  
@@ -155,7 +158,7 @@ FPGA-Conway/
     │   └── xypixel_generator.v   # Active pixel coordinate generator
     └── IP/
         ├── blk_mem_gen_0/        # Block Memory Generator (dual-port BRAM IP)
-        └── clk_wiz_0/            # Clock Wizard (100MHz → 25.175MHz pixel clock)
+        └── clk_wiz_0/            # Clock Wizard (100MHz → 25MHz pixel clock & 150MHz system clock)
 ```
 
 ---
@@ -200,4 +203,6 @@ The only real counterpart would've been using LUT-based SRAM to store one or two
 
 references and resources: 
 - https://www.datawrapper.de/blog/game-of-life
-- 
+- https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life
+- https://golly.sourceforge.io/webapp/golly.html
+- https://www.anhadsawhney.com/fpga-life
