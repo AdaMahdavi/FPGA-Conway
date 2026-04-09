@@ -45,14 +45,6 @@ wait_on_run impl_1
 vivado conway_gol/conway_gol.xpr
 ```
 
-Something that stood out to me was that most implementations I came across didn't allocate the full VGA frame; they either used a scaled-up canvas, rendering larger blocks instead of pixel-wide cells. The simple nature of the game logic is probably a definitive factor in why not many go as far as a detailed full-resolution implementation. But I thought starting with the game logic alone and figuring out the architecture around it would be far more interesting than picking an existing hierarchy with predefined dataflow and memory management.
-
-I started knowing nothing but what the game logic was meant to achieve. Everything else was something I learned along the way. The biggest challenge was certainly figuring out memory hierarchy; the final 3-buffer BRAM implementation ended up at 96% memory utilization. A very tight fit, but one that forced me to get creative in ways that would've been pretty straightforward on a more resourceful board.
-
-**Board:** Digilent Basys3 (Xilinx Artix-7 XC7A35T)  
-**VGA Display:** 640×480 @ 59.5Hz
-
-
 ---
 
 ## Conway's Game of Life and other Cellular Automata:  How does it all work?
@@ -73,6 +65,9 @@ From a hardware standpoint, it's clear what the system needs to do: for every ce
 
 ## Architecture
 
+Something that stood out to me was that most implementations I came across didn't allocate the full VGA frame; they either used a scaled-up canvas, rendering larger blocks instead of pixel-wide cells. The simple nature of the game logic is probably a definitive factor in why not many go as far as a detailed full-resolution implementation. But I thought starting with the game logic alone and figuring out the architecture around it would be far more interesting than picking an existing hierarchy with predefined dataflow and memory management.
+
+I started knowing nothing but what the game logic was meant to achieve. Everything else was something I learned along the way. The biggest challenge was certainly figuring out memory hierarchy; the final 3-buffer BRAM implementation ended up at 96% memory utilization. A very tight fit, but one that forced me to get creative with architecture in ways that would've been pretty straightforward on a more resourceful board:
 
 ![System-level block design](media/images/architecture_bd.png)
 *System-level block design*
