@@ -109,23 +109,23 @@ add_files -norecurse -fileset $obj $files
 
 # --- Pattern / COE init files ---
 set files [list \
-  [file normalize "$origin_dir/patterns/block_center.coe"]                      \
-  [file normalize "$origin_dir/patterns/glider.coe"]                            \
-  [file normalize "$origin_dir/patterns/c4_diag_topright.coe"]                  \
-  [file normalize "$origin_dir/patterns/c4_diag_right.coe"]                     \
+  [file normalize "$origin_dir/patterns/3_engine_gun_1024x512.coe"]             \
+  [file normalize "$origin_dir/patterns/anector_spaceship_1024x512.coe"]        \
   [file normalize "$origin_dir/patterns/elbow_ladder.coe"]                      \
-  [file normalize "$origin_dir/patterns/puffer_engine.coe"]                     \
-  [file normalize "$origin_dir/patterns/3_engine_gun.coe"]                      \
-  [file normalize "$origin_dir/patterns/3_engine_gun_flat.coe"]                 \
+  [file normalize "$origin_dir/patterns/gilder_loop_1024x512.coe"]              \
+  [file normalize "$origin_dir/patterns/gosper_gun.coe"]                        \
+  [file normalize "$origin_dir/patterns/herschel_climber_1024x512.coe"]         \
   [file normalize "$origin_dir/patterns/herschel_p61_1024x512.coe"]             \
-  [file normalize "$origin_dir/patterns/gllider_1024x512.coe"]                  \
-  [file normalize "$origin_dir/patterns/idk_glider_1024x512.coe"]               \
-  [file normalize "$origin_dir/patterns/rats_1024x512.coe"]                     \
-  [file normalize "$origin_dir/patterns/ladder_1024x512.coe"]                   \
-  [file normalize "$origin_dir/patterns/r_pentomino_1024x512.coe"]              \
-  [file normalize "$origin_dir/patterns/infinite_growth_5x5_1024x512.coe"]      \
-  [file normalize "$origin_dir/patterns/infinite_growth_5x5_quad_1024x512.coe"] \
+  [file normalize "$origin_dir/patterns/high_period_1024x512.coe"]              \
+  [file normalize "$origin_dir/patterns/interview_demo.coe"]                    \
   [file normalize "$origin_dir/patterns/noisy_map_1024x512.coe"]                \
+  [file normalize "$origin_dir/patterns/oscillators_7&8_1024x512.coe"]          \
+  [file normalize "$origin_dir/patterns/pentadecathlon_grid.coe"]               \
+  [file normalize "$origin_dir/patterns/pufferfish_breeder.coe"]                \
+  [file normalize "$origin_dir/patterns/puffer_engine_1024x512.coe"]            \
+  [file normalize "$origin_dir/patterns/pushalong_1024x512.coe"]                \
+  [file normalize "$origin_dir/patterns/queen_bee_turn.coe"]                    \
+  [file normalize "$origin_dir/patterns/reactions_1024x512.coe"]                \
 ]
 add_files -norecurse -fileset $obj $files
 
@@ -141,10 +141,10 @@ foreach f $sv_files {
 
 
 # --- Add IP cores ---
-add_files -norecurse -fileset $obj \
+import_ip -norecurse -fileset $obj \
   [file normalize "$origin_dir/srcs/IP/clk_wiz_0/clk_wiz_0.xci"]
 
-add_files -norecurse -fileset $obj \
+import_ip -norecurse -fileset $obj \
   [file normalize "$origin_dir/srcs/IP/blk_mem_gen_0/blk_mem_gen_0.xci"]
 
 foreach ip_file {"clk_wiz_0/clk_wiz_0.xci" "blk_mem_gen_0/blk_mem_gen_0.xci"} {
@@ -159,7 +159,7 @@ foreach ip_file {"clk_wiz_0/clk_wiz_0.xci" "blk_mem_gen_0/blk_mem_gen_0.xci"} {
 # --- Set top module ---
 set obj [get_filesets sources_1]
 set_property -name "top"          -value "conway_top_wrapper" -objects $obj
-set_property -name "top_auto_set" -value "0"                  -objects $obj
+set_property -name "top_auto_set" -value "1"                  -objects $obj
 
 # -------------------------------------------------------------------------
 # Create 'constrs_1' fileset
@@ -187,13 +187,15 @@ if {[string equal [get_filesets -quiet sim_1] ""]} {
 
 set obj [get_filesets sim_1]
 set files [list \
-  [file normalize "$origin_dir/sim/top_conway_tb.v"]  \
+  [file normalize "$origin_dir/sim/bram_vga_tb.v"]      \
+  [file normalize "$origin_dir/sim/control_conway_tb.sv"] \
   [file normalize "$origin_dir/sim/dp_bram_tb.v"]     \
-  [file normalize "$origin_dir/sim/vga_bram_tb.sv"]   \
+  [file normalize "$origin_dir/sim/top_conway_tb.v"]  \
+  [file normalize "$origin_dir/sim/vga_tb.v"]         \
 ]
 add_files -norecurse -fileset $obj $files
 
-set file_obj [get_files -of_objects [get_filesets sim_1] [list "*vga_bram_tb.sv"]]
+set file_obj [get_files -of_objects [get_filesets sim_1] [list "*control_conway_tb.sv"]]
 set_property -name "file_type" -value "SystemVerilog" -objects $file_obj
 
 set obj [get_filesets sim_1]
