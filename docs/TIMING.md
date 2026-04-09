@@ -1,6 +1,6 @@
 # Timing Analysis: Transfer overlap and collision avoidance
 
-As discussed, me have the system running 2 different clocks. VGA BRAM having two ports, is being updated and read over tow different clocks. so an important question is: can we compute all 307,200 next states and transfer them to VRAM within a single VGA frame, without the write pointer ever catching the VGA read pointer mid-transfer? (in other words, how can we ensure we're never over-writing unread cells, or, readed an updated coordinate?)
+As discussed, me have the system running 2 different clocks. VGA BRAM having two ports, is being updated and read over two distinct clocks. so an important question is: can we compute all 307,200 next states and transfer them to VRAM within a single VGA frame, without the write pointer ever catching the VGA read pointer mid-transfer? (in other words, how can we ensure we're never over-writing unread cells, or, reading an ooutdated coordinate again?)
 
 The short answer is yes, by starting updates slightly sooner. 
 
